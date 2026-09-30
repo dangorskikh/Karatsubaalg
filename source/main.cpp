@@ -1,5 +1,117 @@
-#include "procedures.h"
+#include <iostream>
+#include <fstream>
 
-int main(int argcount, char* argvars[]) {
-
+int main() {
+	int N;
+	std::cout << "Type N: ";
+	std::cin >> N;
+	std::ofstream out("karatsuba.v");
+	switch (N) {
+	case 8:
+        out << "module karatsuba_alg #(\n";
+        out << "    parameter N = " << N << "\n";
+        out << ")(\n";
+        out << "    input  wire [N-1:0]     a,\n";
+        out << "    input  wire [N-1:0]     b,\n";
+        out << "    input  wire             clk,\n";
+        out << "    output wire [2*N-1:0]   res\n";
+        out << ");\n\n";
+        out << "    reg [N/2-1:0] a_lo_s1, a_hi_s1, b_lo_s1, b_hi_s1;\n";
+        out << "    reg [N/2:0]   a_sum_s1, b_sum_s1;\n\n";
+        out << "    always @(posedge clk) begin\n";
+        out << "        a_lo_s1  <= a[N/2-1:0];\n";
+        out << "        a_hi_s1  <= a[N-1:N/2];\n";
+        out << "        b_lo_s1  <= b[N/2-1:0];\n";
+        out << "        b_hi_s1  <= b[N-1:N/2];\n";
+        out << "        a_sum_s1 <= {1'b0, a[N/2-1:0]} + {1'b0, a[N-1:N/2]};\n";
+        out << "        b_sum_s1 <= {1'b0, b[N/2-1:0]} + {1'b0, b[N-1:N/2]};\n";
+        out << "    end\n\n";
+        out << "    wire [N-1:0]   P0_comb = a_lo_s1 * b_lo_s1;\n";
+        out << "    wire [N-1:0]   P2_comb = a_hi_s1 * b_hi_s1;\n";
+        out << "    wire [N+1:0]   P1_comb = a_sum_s1 * b_sum_s1;\n\n";
+        out << "    wire [N+1:0] t_comb = P1_comb\n";
+        out << "                        - {{2{1'b0}}, P0_comb}\n";
+        out << "                        - {{2{1'b0}}, P2_comb};\n\n";
+        out << "    reg [N-1:0] P0_s2, P2_s2;\n";
+        out << "    reg [N+1:0] t_s2;\n\n";
+        out << "    always @(posedge clk) begin\n";
+        out << "        P0_s2 <= P0_comb;\n";
+        out << "        P2_s2 <= P2_comb;\n";
+        out << "        t_s2  <= t_comb;\n";
+        out << "    end\n\n";
+        out << "    reg [2*N-1:0] res_s3;\n\n";
+        out << "    always @(posedge clk) begin\n";
+        out << "        res_s3 <= {P2_s2, {N{1'b0}}}\n";
+        out << "                + {{(N/2-2){1'b0}}, t_s2, {(N/2){1'b0}}}\n";
+        out << "                + {{N{1'b0}}, P0_s2};\n";
+        out << "    end\n\n";
+        out << "    assign res = res_s3;\n\n";
+        out << "endmodule\n";
+            break;
+    case 16:
+        out << "module karatsuba_8 (\n";
+        out << "    input  wire [7:0]  a,\n";
+        out << "    input  wire [7:0]  b,\n";
+        out << "    output wire [15:0] res\n";
+        out << ");\n";
+        out << "    wire [3:0] a_lo = a[3:0];\n";
+        out << "    wire [3:0] a_hi = a[7:4];\n";
+        out << "    wire [3:0] b_lo = b[3:0];\n";
+        out << "    wire [3:0] b_hi = b[7:4];\n\n";
+        out << "    wire [4:0] a_sum = {1'b0, a_lo} + {1'b0, a_hi};\n";
+        out << "    wire [4:0] b_sum = {1'b0, b_lo} + {1'b0, b_hi};\n\n";
+        out << "    wire [7:0] P0 = a_lo * b_lo;\n";
+        out << "    wire [7:0] P2 = a_hi * b_hi;\n";
+        out << "    wire [9:0] P1 = a_sum * b_sum;\n\n";
+        out << "    wire [9:0] t = P1 - {2'b00, P0} - {2'b00, P2};\n\n";
+        out << "    assign res = {P2, 8'b0}\n";
+        out << "               + {2'b00, t, 4'b0}\n";
+        out << "               + {8'b0, P0};\n";
+        out << "endmodule\n\n";
+        out << "module karatsuba_alg #(\n";
+        out << "    parameter N = 16\n";
+        out << ")(\n";
+        out << "    input  wire [N-1:0]     a,\n";
+        out << "    input  wire [N-1:0]     b,\n";
+        out << "    input  wire             clk,\n";
+        out << "    output wire [2*N-1:0]   res\n";
+        out << ");\n\n";
+        out << "    reg [N/2-1:0] a_lo_s1, a_hi_s1, b_lo_s1, b_hi_s1;\n";
+        out << "    reg [N/2:0]   a_sum_s1, b_sum_s1;\n\n";
+        out << "    always @(posedge clk) begin\n";
+        out << "        a_lo_s1  <= a[N/2-1:0];\n";
+        out << "        a_hi_s1  <= a[N-1:N/2];\n";
+        out << "        b_lo_s1  <= b[N/2-1:0];\n";
+        out << "        b_hi_s1  <= b[N-1:N/2];\n";
+        out << "        a_sum_s1 <= {1'b0, a[N/2-1:0]} + {1'b0, a[N-1:N/2]};\n";
+        out << "        b_sum_s1 <= {1'b0, b[N/2-1:0]} + {1'b0, b[N-1:N/2]};\n";
+        out << "    end\n\n";
+        out << "    wire [N-1:0] P0_comb;\n";
+        out << "    wire [N-1:0] P2_comb;\n";
+        out << "    wire [N+1:0] P1_comb;\n\n";
+        out << "    karatsuba_8 u_P0 (.a(a_lo_s1), .b(b_lo_s1), .res(P0_comb));\n";
+        out << "    karatsuba_8 u_P2 (.a(a_hi_s1), .b(b_hi_s1), .res(P2_comb));\n\n";
+        out << "    assign P1_comb = a_sum_s1 * b_sum_s1;\n\n";
+        out << "    wire [N+1:0] t_comb = P1_comb\n";
+        out << "                        - {{2{1'b0}}, P0_comb}\n";
+        out << "                        - {{2{1'b0}}, P2_comb};\n\n";
+        out << "    reg [N-1:0] P0_s2, P2_s2;\n";
+        out << "    reg [N+1:0] t_s2;\n\n";
+        out << "    always @(posedge clk) begin\n";
+        out << "        P0_s2 <= P0_comb;\n";
+        out << "        P2_s2 <= P2_comb;\n";
+        out << "        t_s2  <= t_comb;\n";
+        out << "    end\n\n";
+        out << "    reg [2*N-1:0] res_s3;\n\n";
+        out << "    always @(posedge clk) begin\n";
+        out << "        res_s3 <= {P2_s2, {N{1'b0}}}\n";
+        out << "                + {{(N/2-2){1'b0}}, t_s2, {(N/2){1'b0}}}\n";
+        out << "                + {{N{1'b0}}, P0_s2};\n";
+        out << "    end\n\n";
+        out << "    assign res = res_s3;\n\n";
+        out << "endmodule\n";
+        break;
+	default:
+		std::cout << "Wrong N";
+	}
 }
