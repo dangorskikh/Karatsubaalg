@@ -1,10 +1,12 @@
 #include <iostream>
 #include <fstream>
 
-int main() {
-	int N;
-	std::cout << "Type N: ";
-	std::cin >> N;
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <N>\n";
+        return 1;
+    }
+	int N = std::stoi(argv[1]);
 	std::ofstream out("karatsuba.v");
 	switch (N) {
 	case 8:
